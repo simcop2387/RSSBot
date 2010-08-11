@@ -32,6 +32,7 @@ sub getbots
 	{
 		$bots->{$row->{bid}} = $row;
 	}
+	print Dumper($bots);
 	
 	for my $bid (keys %$bots)
 	{
@@ -43,6 +44,7 @@ sub getbots
 		}
 	}
 	
+	print Dumper($bots);
 	return $bots;
 }
 

@@ -43,25 +43,23 @@ sub spawn {
 
 	my $dbo = RSSBot::DB->new($database);
 	
-	my @bots = $dbo->getbots();
-	my $ircs;
+	my $bots = $dbo->getbots();
 	
-	for my $bot (@bots)
+	for my $bot (keys %$bots)
 	{
-		$ircs->{$bot->{bid}}{irc} =  POE::Component::IRC->spawn( 
-			nick => $bot->{nick},
-			ircname => $bot->{ircname},
-			alias => "irc_".$bot->{bid},
-			server => $bot->{server},
-    	) or die "Oh noooo! $!";
-    	$ircs->{$bot->{bid}}{bot} = $bot; 
+		$bots->{$bot}{irc} =  POE::Component::IRC->spawn( 
+			nick => $bots->{$bot}{nick},
+			ircname => $bots->{$bot}{ircname},
+			alias => "irc_".$bot,
+			server => $bots->{$bot}{server},
+    	) or die "Oh noooo! $!"; 
 	}
 	
 	 POE::Session->create(
      package_states => [
-         RSSBot => [ qw(_start irc_001 irc_public) ],
+         RSSBot => [ qw(_start irc_001) ],
      ],
-     heap => { bots => $ircs, dbo => $dbo },
+     heap => { bots => $bots, dbo => $dbo },
  );
 	
 }
@@ -79,9 +77,10 @@ sub irc_001
      # accessing the heap of the sender. Then we register and connect to the
      # specified server.
      my $irc = $sender->get_heap();
-     my $bot = $heap->{bots}{$irc->{alias}};
-     $bot =~ s/irc_//; #remove first part of alias to get the number
-     my $channels = $bot->{bot}{channels};
+     my $bid = $irc->{alias};
+     $bid =~ s/irc_//; #remove first part of alias to get the number
+     my $bot = $heap->{bots}{$bid};
+     my $channels = $bot->{channels};
 
      print "Connected to ", $irc->server_name(), "\n";
 
