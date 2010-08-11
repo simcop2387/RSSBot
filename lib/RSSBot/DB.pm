@@ -11,6 +11,12 @@ sub new
 	$self->{file} = shift;
 	$self->{dbh} = DBI->connect("dbi:SQLite:dbname=".$self->{file},"","");
 	$self->checkschema();
+
+	$self->{sth}{checkentry} = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid = ? AND entryid = ? LIMIT 1");
+	$self->{sth}{addentry}   = $self->{dbh}->prepare("INSERT INTO rssentry (rid, entryid) VALUES (?, ?)");
+	$self->{sth}{getbots}    = $self->{dbh}->prepare("SELECT * FROM bots;");
+	$self->{sth}{getchannels}= $self->{dbh}->prepare("SELECT channel FROM botchannels WHERE bid = ?");
+	$self->{sth}{getfeeds}   = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
 	
 	return $self;
 }
@@ -25,7 +31,7 @@ sub getbots
 {
 	my $self = shift;
 	my $bots;
-	my $sthb = $self->{dbh}->prepare("SELECT * FROM bots;");
+	my $sthb = $self->{sth}{getbots};
 	$sthb->execute();
 	
 	while(my $row = $sthb->fetchrow_hashref())
@@ -35,7 +41,7 @@ sub getbots
 	
 	for my $bid (keys %$bots)
 	{
-		my $sthc = $self->{dbh}->prepare("SELECT channel FROM botchannels WHERE bid = ?");
+		my $sthc = $self->{sth}{getchannels};
 		$sthc->execute($bid);
 		while(my ($channel) = $sthc->fetchrow())	
 		{
@@ -50,7 +56,7 @@ sub getfeeds
 {
 	my $self = shift;
 	
-	my $sth = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
+	my $sth = $self->{sth}{getfeeds};
 	$sth->execute();
 	
 	my @feeds;
@@ -64,6 +70,40 @@ sub getfeeds
 }
 
 sub checkfeeds
+{
+	my $self = shift;
+	my @feeds = $self->getfeeds();
+	
+	for my $feed (@feeds)
+	{
+	}
+}
+
+sub checkentry
+{
+	my $self = shift;
+	my $rid = shift;
+	my $entryid = shift;
+	
+	my $sth = $self->{sth}{checkentry};
+	
+	$sth->execute($rid, $entryid);
+	return $sth->rows();
+}
+
+sub addentry
+{
+	my $self = shift;
+	my $rid = shift;
+	my $entryid = shift;
+	
+	my $sth = $self->{sth}{addentry};
+	
+	$sth->execute($rid, $entryid);
+	return $sth->rows();
+}
+
+sub joinentries
 {
 }
 
