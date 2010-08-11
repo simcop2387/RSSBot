@@ -15,13 +15,33 @@ sub new
 
 sub checkschema
 {
-	#not sure safe way to do this yet
+	my $self = shift;
 	return 1;
-	#$dbh->do("")
 }
 
 sub getbots
 {
+	my $self = shift;
+	my $bots;
+	my $sthb = $self->{dbh}->prepare("SELECT * FROM bots;");
+	$sthb->execute();
+	
+	while(my $row = $sthb->fetchrow_hashref())
+	{
+		$bots->{$row->{bid}} = $row;
+	}
+	
+	for my $bid (keys %$bots)
+	{
+		my $sthc = $self->{dbh}->prepare("SELECT channel FROM botchannels WHERE bid = ?");
+		$sthc->execute($bid);
+		while(my ($channel) = $sthc->fetchrow())	
+		{
+			push @{$bots->{$bid}{channels}}, $channel;
+		}
+	}
+	
+	return $bots;
 }
 
 sub checkfeeds
