@@ -13,12 +13,14 @@ sub new
 	$self->{dbh} = DBI->connect("dbi:SQLite:dbname=".$self->{file},"","");
 	$self->checkschema();
 
-	$self->{sth}{checkentry} = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid = ? AND entryid = ? LIMIT 1");
-	$self->{sth}{addentry}   = $self->{dbh}->prepare("INSERT INTO rssentry (rid, entryid) VALUES (?, ?)");
+    #i'm having to coerce rid comparisions to be strings... i dunno why, but it fixes the bugs and prevents sql injections
+
+    $self->{sth}{checkentry} = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid||'' = ?||'' AND entryid = ? LIMIT 1");
+    $self->{sth}{addentry}   = $self->{dbh}->prepare("INSERT INTO rssentry (rid, entryid) VALUES (?, ?)");
 	$self->{sth}{getbots}    = $self->{dbh}->prepare("SELECT * FROM bots;");
 	$self->{sth}{getchannels}= $self->{dbh}->prepare("SELECT channel FROM botchannels WHERE bid = ?");
 	$self->{sth}{getfeeds}   = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
-	$self->{sth}{getbidbyrid}= $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid = ?");
+	$self->{sth}{getbidbyrid}= $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid||'' = ? || ''");
 	
 	return $self;
 }
@@ -87,7 +89,6 @@ sub checkfeeds
 			if (!$self->checkentry($feed->{rid}, $entry->id()))
 			{
 				$self->addentry($feed->{rid}, $entry->id());
-				print Dumper($feed);
 				push @valid, {feed => $feed, entry => $entry};	
 			}
 		}
@@ -95,7 +96,7 @@ sub checkfeeds
 	
 	my @joined = $self->joinentries(@valid);
 	
-	#print Dumper(\@joined);
+    return @joined;
 }
 
 sub checkentry
@@ -103,11 +104,10 @@ sub checkentry
 	my $self = shift;
 	my $rid = shift;
 	my $entryid = shift;
-	#$self->{sth}{checkentry} = 
-	my $sth = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid = ".$rid." AND entryid = ? LIMIT 1");
+	#$self->{sth}{checkentry} = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid||'' = ?||'' AND entryid = ? LIMIT 1"); 
+	my $sth = $self->{sth}{checkentry};
 	
-	$sth->execute($entryid);
-	#print Dumper([$rid, $entryid],[$sth->fetchrow()]);
+	$sth->execute($rid, $entryid);
 	return $sth->fetchrow();
 }
 
@@ -134,8 +134,8 @@ sub joinentries
 	for my $entry (@entries)
 	{
 		#ok for some damned reason it doesn't want to work unless i do this... why? i know about the sql injections but.. wtf
-		my $sth = $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid = ".$entry->{feed}{rid});
-		$sth->execute();
+		my $sth = $self->{sth}{getbidbyrid};
+		$sth->execute($entry->{feed}{rid});
 		
 		while(my ($bid) = $sth->fetchrow())
 		{

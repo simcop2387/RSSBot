@@ -42,10 +42,7 @@ sub spawn {
 	my $database = shift; #filename for the database
 
 	my $dbo = RSSBot::DB->new($database);
-	
-	$dbo->checkfeeds();
-	return;
-	
+		
 	my $bots = $dbo->getbots();
 	
 	for my $bot (keys %$bots)
@@ -60,7 +57,7 @@ sub spawn {
 	
 	 POE::Session->create(
      package_states => [
-         RSSBot => [ qw(_start irc_001) ],
+         RSSBot => [ qw(_start irc_001 checkfeeds) ],
      ],
      heap => { bots => $bots, dbo => $dbo },
  );
@@ -75,6 +72,7 @@ sub irc_001
 {
 	my $sender = $_[SENDER];
 	my $heap = $_[HEAP];
+	my $kernel = $_[KERNEL];
 
      # Since this is an irc_* event, we can get the component's object by
      # accessing the heap of the sender. Then we register and connect to the
@@ -89,6 +87,7 @@ sub irc_001
 
      # we join our channels
      $irc->yield( join => $_ ) for @$channels;
+     $kernel->yield("checkfeeds");
      return;
 }
 
@@ -113,6 +112,25 @@ sub irc_001
      return;
  }
 
+sub checkfeeds
+{
+	my ($kernel, $heap) = @_[KERNEL, HEAP];
+	
+	my @toannounce = $heap->{dbo}->checkfeeds();
+	
+	for my $feed (@toannounce)
+	{
+		my $bid = $feed->{bid};
+		my $channels = $heap->{bots}{$bid}{channels};
+		
+		for my $channel (@$channels)
+		{
+			$heap->{bots}{$bid}{irc}->yield(privmsg => $channel => "New Article: ".$feed->{entry}->title()." @ ".$feed->{entry}->link().(defined($feed->{entry}->author())?" by ".$feed->{entry}->author():""));
+		}
+	}
+	
+	$kernel->delay_add(checkfeeds=>1800);
+}
 
 =head1 AUTHOR
 
