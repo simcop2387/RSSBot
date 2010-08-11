@@ -2,6 +2,7 @@ package RSSBot::DB;
 
 use DBI;
 use XML::Feed;
+use URI;
 use Data::Dumper;
 
 sub new
@@ -78,7 +79,7 @@ sub checkfeeds
 	
 	for my $feed (@feeds)
 	{
-		my $parsed = XML::Feed->parse($feed->{feedurl});
+		my $parsed = XML::Feed->parse(URI->new($feed->{feedurl}));
 		my @entries = $parsed->entries();
 		
 		for my $entry (@entries)
@@ -86,6 +87,7 @@ sub checkfeeds
 			if (!$self->checkentry($feed->{rid}, $entry->id()))
 			{
 				$self->addentry($feed->{rid}, $entry->id());
+				print Dumper($feed);
 				push @valid, {feed => $feed, entry => $entry};	
 			}
 		}
@@ -93,7 +95,7 @@ sub checkfeeds
 	
 	my @joined = $self->joinentries(@valid);
 	
-	print Dumper(\@joined);
+	#print Dumper(\@joined);
 }
 
 sub checkentry
@@ -101,11 +103,12 @@ sub checkentry
 	my $self = shift;
 	my $rid = shift;
 	my $entryid = shift;
+	#$self->{sth}{checkentry} = 
+	my $sth = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid = ".$rid." AND entryid = ? LIMIT 1");
 	
-	my $sth = $self->{sth}{checkentry};
-	
-	$sth->execute($rid, $entryid);
-	return $sth->rows();
+	$sth->execute($entryid);
+	#print Dumper([$rid, $entryid],[$sth->fetchrow()]);
+	return $sth->fetchrow();
 }
 
 sub addentry
@@ -130,9 +133,11 @@ sub joinentries
 	
 	for my $entry (@entries)
 	{
-		$self->{sth}{getbidbyrid}->execute($entry->{rid});
+		#ok for some damned reason it doesn't want to work unless i do this... why? i know about the sql injections but.. wtf
+		my $sth = $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid = ".$entry->{feed}{rid});
+		$sth->execute();
 		
-		while(my ($bid) = $self->fetchrow())
+		while(my ($bid) = $sth->fetchrow())
 		{
 			push @joined, {%$entry, bid => $bid};
 		}	

@@ -17,6 +17,7 @@ WriteMakefile(
         'POE::Component::IRC' => 0,
         'DBI' => 0,
         'DBD::SQLite' => 0,
+        'URI' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'RSSBot-*' },

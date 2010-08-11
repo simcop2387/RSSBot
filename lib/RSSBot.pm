@@ -43,6 +43,9 @@ sub spawn {
 
 	my $dbo = RSSBot::DB->new($database);
 	
+	$dbo->checkfeeds();
+	return;
+	
 	my $bots = $dbo->getbots();
 	
 	for my $bot (keys %$bots)
@@ -86,7 +89,6 @@ sub irc_001
 
      # we join our channels
      $irc->yield( join => $_ ) for @$channels;
-     $heap->{dbo}->checkfeeds();
      return;
 }
 
