@@ -73,10 +73,24 @@ sub checkfeeds
 {
 	my $self = shift;
 	my @feeds = $self->getfeeds();
+	my @valid;
 	
 	for my $feed (@feeds)
 	{
+		my $parsed = XML::Feed->parse($feed->{feedurl});
+		my @entries = $parsed->entries();
+		
+		for my $entry (@entries)
+		{
+			if (!$self->checkentry($feed->{rid}, $entry->id()))
+			{
+				$self->addentry($feed->{rid}, $entry->id());
+				push @valid, {feed => $feed, entry => $entry};	
+			}
+		}
 	}
+	
+	my @joined = $self->joinentries(@valid);
 }
 
 sub checkentry
@@ -105,6 +119,9 @@ sub addentry
 
 sub joinentries
 {
+	my $self = shift;
+	my @entries = @_;
+	
 }
 
 1;
