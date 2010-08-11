@@ -87,7 +87,6 @@ sub irc_001
 
      # we join our channels
      $irc->yield( join => $_ ) for @$channels;
-     $kernel->yield("checkfeeds");
      return;
 }
 
@@ -97,6 +96,7 @@ sub irc_001
 
  sub _start {
      my $heap = $_[HEAP];
+     my $kernel = $_[KERNEL];
 
      # retrieve our component's object from the heap where we stashed it
      
@@ -108,6 +108,8 @@ sub irc_001
        $bots->{$bot}{irc}->yield( register => 'all' );
        $bots->{$bot}{irc}->yield( connect => { } );
 	 }
+	 
+	 $kernel->delay("checkfeeds"=>60);
 	 
      return;
  }
@@ -129,7 +131,7 @@ sub checkfeeds
 		}
 	}
 	
-	$kernel->delay_add(checkfeeds=>1800);
+	$kernel->delay(checkfeeds=>1800);
 }
 
 =head1 AUTHOR
