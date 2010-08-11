@@ -17,6 +17,7 @@ sub new
 	$self->{sth}{getbots}    = $self->{dbh}->prepare("SELECT * FROM bots;");
 	$self->{sth}{getchannels}= $self->{dbh}->prepare("SELECT channel FROM botchannels WHERE bid = ?");
 	$self->{sth}{getfeeds}   = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
+	$self->{sth}{getbidbyrid}= $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid = ?");
 	
 	return $self;
 }
@@ -91,6 +92,8 @@ sub checkfeeds
 	}
 	
 	my @joined = $self->joinentries(@valid);
+	
+	print Dumper(\@joined);
 }
 
 sub checkentry
@@ -117,11 +120,25 @@ sub addentry
 	return $sth->rows();
 }
 
+#this is just like an inner join on a database, except i can't do it there since sqlite doesn't support fetching thigns from rss feeds, lazy developers....
 sub joinentries
 {
 	my $self = shift;
 	my @entries = @_;
 	
+	my @joined;
+	
+	for my $entry (@entries)
+	{
+		$self->{sth}{getbidbyrid}->execute($entry->{rid});
+		
+		while(my ($bid) = $self->fetchrow())
+		{
+			push @joined, {%$entry, bid => $bid};
+		}	
+	}
+	
+	return @joined;
 }
 
 1;

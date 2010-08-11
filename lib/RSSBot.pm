@@ -86,6 +86,7 @@ sub irc_001
 
      # we join our channels
      $irc->yield( join => $_ ) for @$channels;
+     $heap->{dbo}->checkfeeds();
      return;
 }
 
