@@ -32,7 +32,6 @@ sub getbots
 	{
 		$bots->{$row->{bid}} = $row;
 	}
-	print Dumper($bots);
 	
 	for my $bid (keys %$bots)
 	{
@@ -44,8 +43,24 @@ sub getbots
 		}
 	}
 	
-	print Dumper($bots);
 	return $bots;
+}
+
+sub getfeeds
+{
+	my $self = shift;
+	
+	my $sth = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
+	$sth->execute();
+	
+	my @feeds;
+	
+	while(my $row = $sth->fetchrow_hashref())
+	{
+		push @feeds, $row;
+	}
+	
+	return @feeds;
 }
 
 sub checkfeeds
