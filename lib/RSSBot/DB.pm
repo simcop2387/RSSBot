@@ -11,6 +11,8 @@ sub new
 	$self->{file} = shift;
 	$self->{dbh} = DBI->connect("dbi:SQLite:dbname=".$self->{file},"","");
 	$self->checkschema();
+	
+	return $self;
 }
 
 sub checkschema
