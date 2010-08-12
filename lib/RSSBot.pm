@@ -57,7 +57,7 @@ sub spawn {
 	
 	 POE::Session->create(
      package_states => [
-         RSSBot => [ qw(_start irc_001 checkfeeds) ],
+         RSSBot => [ qw(_start irc_001 checkfeeds irc_msg) ],
      ],
      heap => { bots => $bots, dbo => $dbo },
  );
@@ -93,6 +93,113 @@ sub irc_001
 =head2 _start
 
 =cut
+
+sub _splitandsend
+{
+	my $irc = shift;
+	my $who = shift;
+	my $string = shift;
+	my @lines = split/\n/, $string;
+	
+	$irc->yield(privmsg=>$who=>$_) for @lines;
+}
+
+sub irc_msg
+{
+     my $heap = $_[HEAP];
+     my $kernel = $_[KERNEL];
+     my $sender = $_[SENDER];
+     my $irc = $sender->get_heap();
+     my ($who, $what) = @_[ARG0, ARG2];
+     my ($nick) = ($who =~ m/^(.*)!/g);
+     
+     my $isadmin = $heap->{dbo}->checkuser($who);
+
+    if ($what =~ /help/)
+    {
+    	if ($isadmin)
+    	{
+    	_splitandsend($irc, $nick => << 'EOL' );
+Welcome to RSSBot!
+You're currently recognized as an administrator
+
+Commands
+    listbots # list the bots on the system
+    listfeeds # list the feeds we check
+    explainbot BID # shows you everything about the bot, see listbots for the id
+	addfeed URL  # add a feed to the system
+	addbot nick server # add bot to the system (requires restart to start bot)
+	addfeedtobot RID BID # adds a feed to a bot for announcing, RID is feed id, BID is bot id, see list{feeds,bots}
+	addchantobot BID channel # adds a channel to a bot, see listbots for BID
+	removefeed RID # remove a feed from the system, see listfeeds
+	removebot BID # remove a bot from the system, see listbots
+	removefeedfrombot RID BID # removes a feed from a bot for announcing, see list{feeds,bots}
+	removechanfrombot BID channel # removes a channel from a bot, see listbots
+	help # this you ninny
+	source # http://github.com/simcop2387/RSSBot
+EOL
+    	}
+    	else
+    	{
+    	_splitandsend($irc, $nick => << 'EOL' );
+Welcome to RSSBot!
+You're currently recognized as a regular user
+
+Commands
+	help # this you ninny
+	source # http://github.com/simcop2387/RSSBot		    	
+EOL
+    	}
+    }
+	elsif ($what =~ /source/)   
+	{
+		$irc->yield(privmsg => $nick, "http://github.com/simcop2387/RSSBot");
+	}
+	elsif ($isadmin)
+	{
+		if ($what =~ /listbots/)
+		{
+		}
+		elsif ($what =~ /listfeeds/)
+		{
+		}
+		elsif ($what =~ /explainbot\s+(.*)\s+/)
+		{
+		}
+		elsif ($what =~ /addfeed\s+(.*)\s+/)
+		{
+			$heap->{dbo}->addfeed($1, $2);
+		}
+		elsif ($what =~ /addbot\s+(.*?)\s+(.*?)\s+/)
+		{
+			$heap->{dbo}->addbot($1, $2);
+		}
+		elsif ($what =~ /addfeedtobot\s+(.*?)\s+(.*?)\s+/)
+		{
+			$heap->{dbo}->addfeedtobot($1, $2);
+		}
+		elsif ($what =~ /addchantobot\s+(.*?)\s+(.*?)\s+/)
+		{
+			$heap->{dbo}->addchantobot($1, $2);
+		}
+		elsif ($what =~ /removefeed\s+(.*?)\s+/)
+		{
+			$heap->{dbo}->removefeed($1);
+		}
+		elsif ($what =~ /removebot\s+(.*?)\s+/)
+		{
+			$heap->{dbo}->removebot($1);
+		}
+		elsif ($what =~ /removefeedfrombot\s+(.*?)\s+(.*?)\s+/)
+		{
+			$heap->{dbo}->removefeedfrombot($1, $2);
+		}
+		elsif ($what =~ /removechanfrombot\s+(.*?)\s+(.*?)\s+/)
+		{
+			$heap->{dbo}->removechanfrombot($1, $2);
+		}
+	}
+}
 
  sub _start {
      my $heap = $_[HEAP];
