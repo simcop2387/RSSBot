@@ -159,6 +159,15 @@ EOL
 	{
 		if ($what =~ /listbots/)
 		{
+			my @bots = $heap->{dbo}->getbots();
+			my $output = "BID | Nickname | Server | [Channels]\n----------------------------------------\n";
+			
+			for my $bot (@bots)
+			{
+				my @channels = $heap->{dbo}->getchannels($bot->{bid});
+				$output.=$bot->{bid}.".   ".$bot->{nick}."    ".$bot->{server}."    [".()."]\n"
+			}
+			
 		}
 		elsif ($what =~ /listfeeds/)
 		{
