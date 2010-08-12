@@ -1,5 +1,8 @@
 package RSSBot::DB;
 
+use strict;
+use warnings;
+
 use DBI;
 use XML::Feed;
 use URI;
@@ -15,12 +18,23 @@ sub new
 
     #i'm having to coerce rid comparisions to be strings... i dunno why, but it fixes the bugs and prevents sql injections
 
-    $self->{sth}{checkentry} = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid||'' = ?||'' AND entryid = ? LIMIT 1");
-    $self->{sth}{addentry}   = $self->{dbh}->prepare("INSERT INTO rssentry (rid, entryid) VALUES (?, ?)");
-	$self->{sth}{getbots}    = $self->{dbh}->prepare("SELECT * FROM bots;");
-	$self->{sth}{getchannels}= $self->{dbh}->prepare("SELECT channel FROM botchannels WHERE bid = ?");
-	$self->{sth}{getfeeds}   = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
-	$self->{sth}{getbidbyrid}= $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid||'' = ? || ''");
+	$self->{sth}{getbots}         = $self->{dbh}->prepare("SELECT * FROM bots;");
+	$self->{sth}{getchannels}     = $self->{dbh}->prepare("SELECT channel FROM botchannels WHERE bid = ?");
+	$self->{sth}{getfeeds}        = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
+	$self->{sth}{getbidbyrid}     = $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid||'' = ? || ''");
+    	
+	$self->{sth}{addbot}          = $self->{dbh}->prepare("INSERT INTO bots (nick, server, ircname, port) VALUES (?, ?, ?, ?)");
+    $self->{sth}{addfeed}         = $self->{dbh}->prepare("INSERT INTO rssfeeds (url) VALUES (?)");
+    $self->{sth}{addentry}        = $self->{dbh}->prepare("INSERT INTO rssentry (rid, entryid) VALUES (?, ?)");
+    $self->{sth}{addfeedtobot}    = $self->{dbh}->prepare("INSERT INTO rssbots (rid, bid) VALUES (?, ?)");
+    $self->{sth}{addchanneltobot} = $self->{dbh}->prepare("INSERT INTO botchannels (bid, channel) VALUES (?, ?)");
+    
+    $self->{sth}{removefeed}      = $self->{dbh}->prepare("DELETE FROM rssfeeds WHERE rid||'' = ?; DELETE FROM rssbots WHERE rid||'' = ?; DELETE FROM rssentry    WHERE rid||'' = ?");
+    $self->{sth}{removebot}       = $self->{dbh}->prepare("DELETE FROM bots     WHERE bid||'' = ?; DELETE FROM rssbots WHERE bid||'' = ?; DELETE FROM botchannels WHERE bid||'' = ?");
+	$self->{sth}{removechanfrombot}=$self->{dbh}->prepare("DELETE FROM botchannels WHERE bid||'' = ?||'' AND channel = ?");
+	$self->{sth}{removefeedfrombot}=$self->{dbh}->prepare("DELETE FROM rssfeeds    WHERE bid||'' = ?||'' AND rid||'' = ?||''");
+
+    $self->{sth}{checkentry}      = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid||'' = ?||'' AND entryid = ? LIMIT 1");
 	
 	return $self;
 }
@@ -71,6 +85,94 @@ sub getfeeds
 	}
 	
 	return @feeds;
+}
+
+sub addbot
+{
+	my $self = shift;
+	my $bot = shift;
+	my $server = shift;
+	my $ircname = shift // "RSSBot";
+	my $port = shift // 6667;
+	my $sth = $self->{sth}{addbot};
+	
+	$sth->execute($bot, $server, $ircname, $port);
+	return $sth->rows();
+}
+
+sub addchanneltobot
+{
+	my $self = shift;
+	my $bid = shift;
+	my $channel = shift;
+	my $sth = $self->{sth}{addchanneltobot};
+	
+	$sth->execute($bid, $channel);
+	return $sth->rows();
+}
+
+sub addfeed
+{
+	my $self = shift;
+	my $url = shift;
+	my $sth = $self->{sth}{addfeed};
+	
+	$sth->execute($url);
+	return $sth->rows();
+}
+
+sub addfeedtobot
+{
+	my $self = shift;
+	my $rid = shift;
+	my $bid = shift;
+	my $sth = $self->{sth}{addfeedtobot};
+	
+	$sth->execute($rid,$bid);
+	return $sth->rows();
+}
+
+sub removebot
+{
+	my $self = shift;
+	my $bid = shift;
+	my $sth = $self->{sth}{removebot};
+	
+	$sth->execute($bid, $bid, $bid);
+	return $sth->rows();
+}
+
+sub removechannelfrombot
+{
+	my $self = shift;
+	my $bid = shift;
+	my $channel = shift;
+	my $sth = $self->{sth}{removechanfrombot};
+	
+	$sth->execute($bid, $channel);
+	return $sth->rows();
+}
+
+sub removefeed
+{
+	my $self = shift;
+	my $rid = shift;
+	my $sth = $self->{sth}{removefeed};
+	
+	$sth->execute($rid,$rid,$rid);
+	return $sth->rows();
+}
+
+sub removefeedfrombot
+{
+	my $self = shift;
+	my $rid = shift;
+	my $bid = shift;
+	my $sth = $self->{sth}{removefeedfrombot};
+	
+	#swapped in SQL
+	$sth->execute($bid,$rid);
+	return $sth->rows();
 }
 
 sub checkfeeds
