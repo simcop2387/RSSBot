@@ -24,7 +24,7 @@ sub new
 	$self->{sth}{getfeeds}        = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
 	$self->{sth}{getbidbyrid}     = $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid||'' = ? || ''");
     $self->{sth}{getridbybid}     = $self->{dbh}->prepare("SELECT rid FROM rssbots WHERE bid||'' = ? || ''");
-    $self->{sth}{getfeedsbybid}   = $self->{dbh}->prepare("SELECT rssfeeds.rid, rssfeeds.url FROM rssbots, rssfeeds WHERE rssfeeds.rid||'' = rssbots.rid||'' AND rssbots.bid||''=?||''");
+    $self->{sth}{getfeedsbybid}   = $self->{dbh}->prepare("SELECT rssfeeds.rid, rssfeeds.feedurl FROM rssbots, rssfeeds WHERE rssfeeds.rid||'' = rssbots.rid||'' AND rssbots.bid||''=?||''");
     	
 	$self->{sth}{addbot}          = $self->{dbh}->prepare("INSERT INTO bots (nick, server, ircname, port) VALUES (?, ?, ?, ?)");
     $self->{sth}{addfeed}         = $self->{dbh}->prepare("INSERT INTO rssfeeds (url) VALUES (?)");
