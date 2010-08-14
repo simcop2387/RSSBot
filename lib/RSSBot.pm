@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use Data::Dumper;
-use POE qw(Component::IRC);
+use POE qw(Component::IRC Component::IRC::Plugin::Connector Component::IRC::Plugin::NickReclaim);
 use RSSBot::DB;
 
 =head1 NAME
@@ -164,16 +164,41 @@ EOL
 			
 			for my $bot (@bots)
 			{
-				my @channels = $heap->{dbo}->getchannels($bot->{bid});
-				$output.=$bot->{bid}.".   ".$bot->{nick}."    ".$bot->{server}."    [".()."]\n"
+				my @channels = @{$bot->{channels}};
+				$output.=$bot->{bid}.".   ".$bot->{nick}."    ".$bot->{server}."    [".(join ",", @channels)."]\n"
 			}
 			
+			_splitandsend($irc, $nick, $output);
 		}
 		elsif ($what =~ /listfeeds/)
 		{
+			my @feeds = $heap->{dbo}->getfeeds();
+			my $output = "RID | URL\n----------------------------------------\n";
+			
+			for my $feed (@feeds)
+			{
+				$output.=$feed->{rid}.".   ".$feed->{url}."\n";
+			}
+			
+			_splitandsend($irc, $nick, $output);
 		}
 		elsif ($what =~ /explainbot\s+(.*)\s+/)
 		{
+			my $bid = $1;
+			
+			my $bot = $heap->{dbo}->getbotbybid($bid);
+			my $output = "Bot $bid is named ". $bot->{nick}. " and is located on ".$bot->{server}. "\n";
+			$output .= "[ ".(join ",", @{$bot->{channels}})." ]";
+			$output .= "RID | URL\n----------------------------------------\n";
+			
+			my @feeds = $heap->{dbo}->getfeedsbybid($bid);
+			
+			for my $feed (@feeds)
+			{
+				$output.=$feed->{rid}.".   ".$feed->{url}."\n";
+			}
+			
+			_splitandsend($irc, $nick, $output);
 		}
 		elsif ($what =~ /addfeed\s+(.*)\s+/)
 		{
@@ -221,6 +246,9 @@ EOL
      #cycle through them all and hope for the best
 	 for my $bot (keys %$bots)
 	 {
+       $bots->{$bot}{irc}->plugin_add( 'Connector' => POE::Component::IRC::Plugin::Connector->new() );
+	   $bots->{$bot}{irc}->plugin_add( 'NickReclaim' => POE::Component::IRC::Plugin::NickReclaim->new( poll => 30 ) );
+
        $bots->{$bot}{irc}->yield( register => 'all' );
        $bots->{$bot}{irc}->yield( connect => { } );
 	 }

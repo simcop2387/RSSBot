@@ -19,9 +19,12 @@ sub new
     #i'm having to coerce rid comparisions to be strings... i dunno why, but it fixes the bugs and prevents sql injections
 
 	$self->{sth}{getbots}         = $self->{dbh}->prepare("SELECT * FROM bots;");
+	$self->{sth}{getbotbybid}     = $self->{dbh}->prepare("SELECT * FROM bots WHERE bid||'' = ?||'';");
 	$self->{sth}{getchannels}     = $self->{dbh}->prepare("SELECT channel FROM botchannels WHERE bid = ?");
 	$self->{sth}{getfeeds}        = $self->{dbh}->prepare("SELECT * FROM rssfeeds;");
 	$self->{sth}{getbidbyrid}     = $self->{dbh}->prepare("SELECT bid FROM rssbots WHERE rid||'' = ? || ''");
+    $self->{sth}{getridbybid}     = $self->{dbh}->prepare("SELECT rid FROM rssbots WHERE bid||'' = ? || ''");
+    $self->{sth}{getfeedsbybid}   = $self->{dbh}->prepare("SELECT rssfeeds.rid, rssfeeds.url FROM rssbots, rssfeeds WHERE rssfeeds.rid||'' = rssbots.rid||'' AND rssbots.bid||''=?||''");
     	
 	$self->{sth}{addbot}          = $self->{dbh}->prepare("INSERT INTO bots (nick, server, ircname, port) VALUES (?, ?, ?, ?)");
     $self->{sth}{addfeed}         = $self->{dbh}->prepare("INSERT INTO rssfeeds (url) VALUES (?)");
@@ -70,12 +73,49 @@ sub getbots
 	return $bots;
 }
 
+sub getbotbybid
+{
+	my $self = shift;
+	my $bid = shift;
+	my $sthb = $self->{sth}{getbotbybid};
+	$sthb->execute($bid);
+	
+	my $bot = $sthb->fetchrow_hashref();
+	
+    my $sthc = $self->{sth}{getchannels};
+    $sthc->execute($bid);
+    while(my ($channel) = $sthc->fetchrow())	
+	{
+	    push @{$bot->{channels}}, $channel;
+    }
+    
+	return $bot;
+}
+
 sub getfeeds
 {
 	my $self = shift;
 	
 	my $sth = $self->{sth}{getfeeds};
 	$sth->execute();
+	
+	my @feeds;
+	
+	while(my $row = $sth->fetchrow_hashref())
+	{
+		push @feeds, $row;
+	}
+	
+	return @feeds;
+}
+
+sub getfeedsbybid
+{
+	my $self = shift;
+	my $bid = shift;
+	
+	my $sth = $self->{sth}{getfeeds};
+	$sth->execute($bid);
 	
 	my @feeds;
 	
@@ -161,6 +201,42 @@ sub removefeed
 	
 	$sth->execute($rid,$rid,$rid);
 	return $sth->rows();
+}
+
+sub getchannels
+{
+	my $self = shift;
+	my $bid = shift;
+	my $sth = $self->{sth}{getchannels};
+	
+	$sth->execute($bid);
+	my @results;
+	push @results, $_ while (($_) = $sth->fetchrow());
+	return @results;
+}
+
+sub getridbybid
+{
+	my $self = shift;
+	my $bid = shift;
+	my $sth = $self->{sth}{getridbybid};
+	
+	$sth->execute($bid);
+	my @results;
+	push @results, $_ while (($_) = $sth->fetchrow());
+	return @results;
+}
+
+sub getbidbyrid
+{
+	my $self = shift;
+	my $rid = shift;
+	my $sth = $self->{sth}{getbidbyrid};
+	
+	$sth->execute($rid);
+	my @results;
+	push @results, $_ while (($_) = $sth->fetchrow());
+	return @results;
 }
 
 sub removefeedfrombot

@@ -15,6 +15,8 @@ WriteMakefile(
         'Test::More' => 0,
         'XML::Feed' => 0,
         'POE::Component::IRC' => 0,
+        'POE::Component::IRC::Plugin::Connector' => 0,
+        'POE::Component::IRC::Plugin::NickReclaim' => 0,
         'DBI' => 0,
         'DBD::SQLite' => 0,
         'URI' => 0,
