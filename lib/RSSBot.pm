@@ -200,7 +200,7 @@ EOL
 			
 			for my $feed (@feeds)
 			{
-				$output.=$feed->{rid}.".   ".$feed->{url}."\n";
+				$output.=$feed->{rid}.".   ".$feed->{feedurl}."\n";
 			}
 			
 			$output.="END OF LINE";
