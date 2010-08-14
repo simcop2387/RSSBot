@@ -122,7 +122,7 @@ sub getfeedsbybid
 	my $self = shift;
 	my $bid = shift;
 	
-	my $sth = $self->{sth}{getfeeds};
+	my $sth = $self->{sth}{getfeedsbybid};
 	$sth->execute($bid);
 	
 	my @feeds;

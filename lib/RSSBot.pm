@@ -166,7 +166,7 @@ EOL
 			{
 				my $bot = $bots->{$botk};
 				my @channels = @{$bot->{channels}};
-				$output.=$bot->{bid}.".   ".$bot->{nick}."    ".$bot->{server}."    [".(join ",", @channels)."]\n"
+				$output.=$bot->{bid}.".   ".$bot->{nick}."    ".$bot->{server}."    [".(join ",", @channels)."]\n";
 			}
 			
 			$output.="END OF LINE";
@@ -193,7 +193,7 @@ EOL
 			
 			my $bot = $heap->{dbo}->getbotbybid($bid);
 			my $output = "Bot $bid is named ". $bot->{nick}. " and is located on ".$bot->{server}. "\n";
-			$output .= "[ ".(join ",", @{$bot->{channels}})." ]";
+			$output .= "Channels: ".(join ",", @{$bot->{channels}})."\n";
 			$output .= "RID | URL\n----------------------------------------\n";
 			
 			my @feeds = $heap->{dbo}->getfeedsbybid($bid);
