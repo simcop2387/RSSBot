@@ -169,6 +169,8 @@ EOL
 				$output.=$bot->{bid}.".   ".$bot->{nick}."    ".$bot->{server}."    [".(join ",", @channels)."]\n"
 			}
 			
+			$output.="END OF LINE";
+			
 			_splitandsend($irc, $nick, $output);
 		}
 		elsif ($what =~ /listfeeds/)
@@ -181,9 +183,11 @@ EOL
 				$output.=$feed->{rid}.".   ".$feed->{feedurl}."\n";
 			}
 			
+			$output.="END OF LINE";
+			
 			_splitandsend($irc, $nick, $output);
 		}
-		elsif ($what =~ /explainbot\s+(.*)\s+/)
+		elsif ($what =~ /explainbot\s+(.*)/)
 		{
 			my $bid = $1;
 			
@@ -199,37 +203,39 @@ EOL
 				$output.=$feed->{rid}.".   ".$feed->{url}."\n";
 			}
 			
+			$output.="END OF LINE";
+			
 			_splitandsend($irc, $nick, $output);
 		}
-		elsif ($what =~ /addfeed\s+(.*)\s+/)
+		elsif ($what =~ /addfeed\s+(.*)/)
 		{
 			$heap->{dbo}->addfeed($1, $2);
 		}
-		elsif ($what =~ /addbot\s+(.*?)\s+(.*?)\s+/)
+		elsif ($what =~ /addbot\s+(.*?)\s+(.*?)/)
 		{
 			$heap->{dbo}->addbot($1, $2);
 		}
-		elsif ($what =~ /addfeedtobot\s+(.*?)\s+(.*?)\s+/)
+		elsif ($what =~ /addfeedtobot\s+(.*?)\s+(.*?)/)
 		{
 			$heap->{dbo}->addfeedtobot($1, $2);
 		}
-		elsif ($what =~ /addchantobot\s+(.*?)\s+(.*?)\s+/)
+		elsif ($what =~ /addchantobot\s+(.*?)\s+(.*?)/)
 		{
 			$heap->{dbo}->addchantobot($1, $2);
 		}
-		elsif ($what =~ /removefeed\s+(.*?)\s+/)
+		elsif ($what =~ /removefeed\s+(.*?)/)
 		{
 			$heap->{dbo}->removefeed($1);
 		}
-		elsif ($what =~ /removebot\s+(.*?)\s+/)
+		elsif ($what =~ /removebot\s+(.*?)/)
 		{
 			$heap->{dbo}->removebot($1);
 		}
-		elsif ($what =~ /removefeedfrombot\s+(.*?)\s+(.*?)\s+/)
+		elsif ($what =~ /removefeedfrombot\s+(.*?)\s+(.*?)/)
 		{
 			$heap->{dbo}->removefeedfrombot($1, $2);
 		}
-		elsif ($what =~ /removechanfrombot\s+(.*?)\s+(.*?)\s+/)
+		elsif ($what =~ /removechanfrombot\s+(.*?)\s+(.*?)/)
 		{
 			$heap->{dbo}->removechanfrombot($1, $2);
 		}
