@@ -178,7 +178,7 @@ EOL
 			
 			for my $feed (@feeds)
 			{
-				$output.=$feed->{rid}.".   ".$feed->{url}."\n";
+				$output.=$feed->{rid}.".   ".$feed->{feedurl}."\n";
 			}
 			
 			_splitandsend($irc, $nick, $output);
