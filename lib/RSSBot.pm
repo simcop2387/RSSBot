@@ -192,6 +192,13 @@ EOL
 			my $bid = $1;
 			
 			my $bot = $heap->{dbo}->getbotbybid($bid);
+
+			unless (defined($bot))
+			{
+				$irc->yield(privmsg => $who, "No such bot $bid");
+				return;
+			};
+			
 			my $output = "Bot $bid is named ". $bot->{nick}. " and is located on ".$bot->{server}. "\n";
 			$output .= "Channels: ".(join ",", @{$bot->{channels}})."\n";
 			$output .= "RID | URL\n----------------------------------------\n";
