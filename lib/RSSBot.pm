@@ -187,7 +187,7 @@ EOL
 			
 			_splitandsend($irc, $nick, $output);
 		}
-		elsif ($what =~ /explainbot\s+(.*)/)
+		elsif ($what =~ /explainbot\s+(\d+)/)
 		{
 			my $bid = $1;
 			
@@ -214,35 +214,35 @@ EOL
 			
 			_splitandsend($irc, $nick, $output);
 		}
-		elsif ($what =~ /addfeed\s+(.*)/)
+		elsif ($what =~ /addfeed\s+(\S+)/)
 		{
 			$heap->{dbo}->addfeed($1, $2);
 		}
-		elsif ($what =~ /addbot\s+(.*?)\s+(.*?)/)
+		elsif ($what =~ /addbot\s+(\S+)\s+(\S+)/)
 		{
 			$heap->{dbo}->addbot($1, $2);
 		}
-		elsif ($what =~ /addfeedtobot\s+(.*?)\s+(.*?)/)
+		elsif ($what =~ /addfeedtobot\s+(\d+)\s+(\d+)/)
 		{
 			$heap->{dbo}->addfeedtobot($1, $2);
 		}
-		elsif ($what =~ /addchantobot\s+(.*?)\s+(.*?)/)
+		elsif ($what =~ /addchantobot\s+(\S+)\s+(\d+)/)
 		{
 			$heap->{dbo}->addchantobot($1, $2);
 		}
-		elsif ($what =~ /removefeed\s+(.*?)/)
+		elsif ($what =~ /removefeed\s+(\d+)/)
 		{
 			$heap->{dbo}->removefeed($1);
 		}
-		elsif ($what =~ /removebot\s+(.*?)/)
+		elsif ($what =~ /removebot\s+(\d+)/)
 		{
 			$heap->{dbo}->removebot($1);
 		}
-		elsif ($what =~ /removefeedfrombot\s+(.*?)\s+(.*?)/)
+		elsif ($what =~ /removefeedfrombot\s+(\d+)\s+(\d+)/)
 		{
 			$heap->{dbo}->removefeedfrombot($1, $2);
 		}
-		elsif ($what =~ /removechanfrombot\s+(.*?)\s+(.*?)/)
+		elsif ($what =~ /removechanfrombot\s+(\S+)\s+(\d+)/)
 		{
 			$heap->{dbo}->removechanfrombot($1, $2);
 		}
