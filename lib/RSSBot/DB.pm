@@ -27,7 +27,7 @@ sub new
     $self->{sth}{getfeedsbybid}   = $self->{dbh}->prepare("SELECT rssfeeds.rid, rssfeeds.feedurl FROM rssbots, rssfeeds WHERE rssfeeds.rid||'' = rssbots.rid||'' AND rssbots.bid||''=?||''");
     	
 	$self->{sth}{addbot}          = $self->{dbh}->prepare("INSERT INTO bots (nick, server, ircname, port) VALUES (?, ?, ?, ?)");
-    $self->{sth}{addfeed}         = $self->{dbh}->prepare("INSERT INTO rssfeeds (url) VALUES (?)");
+    $self->{sth}{addfeed}         = $self->{dbh}->prepare("INSERT INTO rssfeeds (feedurl) VALUES (?)");
     $self->{sth}{addentry}        = $self->{dbh}->prepare("INSERT INTO rssentry (rid, entryid) VALUES (?, ?)");
     $self->{sth}{addfeedtobot}    = $self->{dbh}->prepare("INSERT INTO rssbots (rid, bid) VALUES (?, ?)");
     $self->{sth}{addchanneltobot} = $self->{dbh}->prepare("INSERT INTO botchannels (bid, channel) VALUES (?, ?)");
