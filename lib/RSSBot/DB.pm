@@ -259,6 +259,7 @@ sub checkfeeds
 	
 	for my $feed (@feeds)
 	{
+		eval{
 		my $parsed = XML::Feed->parse(URI->new($feed->{feedurl}));
 		my @entries = $parsed->entries();
 		
@@ -270,6 +271,7 @@ sub checkfeeds
 				push @valid, {feed => $feed, entry => $entry};	
 			}
 		}
+		}; #silently ignore errors for now
 	}
 	
 	my @joined = $self->joinentries(@valid);
