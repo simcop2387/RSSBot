@@ -35,7 +35,7 @@ sub new
     $self->{sth}{removefeed}      = $self->{dbh}->prepare("DELETE FROM rssfeeds WHERE rid||'' = ?; DELETE FROM rssbots WHERE rid||'' = ?; DELETE FROM rssentry    WHERE rid||'' = ?");
     $self->{sth}{removebot}       = $self->{dbh}->prepare("DELETE FROM bots     WHERE bid||'' = ?; DELETE FROM rssbots WHERE bid||'' = ?; DELETE FROM botchannels WHERE bid||'' = ?");
 	$self->{sth}{removechanfrombot}=$self->{dbh}->prepare("DELETE FROM botchannels WHERE bid||'' = ?||'' AND channel = ?");
-	$self->{sth}{removefeedfrombot}=$self->{dbh}->prepare("DELETE FROM rssfeeds    WHERE bid||'' = ?||'' AND rid||'' = ?||''");
+	$self->{sth}{removefeedfrombot}=$self->{dbh}->prepare("DELETE FROM rssbots     WHERE bid||'' = ?||'' AND rid||'' = ?||''");
 
     $self->{sth}{checkentry}      = $self->{dbh}->prepare("SELECT 1 FROM rssentry WHERE rid||'' = ?||'' AND entryid = ? LIMIT 1");
 	
