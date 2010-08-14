@@ -159,11 +159,12 @@ EOL
 	{
 		if ($what =~ /listbots/)
 		{
-			my @bots = $heap->{dbo}->getbots();
+			my $bots = $heap->{dbo}->getbots();
 			my $output = "BID | Nickname | Server | [Channels]\n----------------------------------------\n";
 			
-			for my $bot (@bots)
+			for my $botk (keys %$bots)
 			{
+				my $bot = $bots->{$botk};
 				my @channels = @{$bot->{channels}};
 				$output.=$bot->{bid}.".   ".$bot->{nick}."    ".$bot->{server}."    [".(join ",", @channels)."]\n"
 			}
