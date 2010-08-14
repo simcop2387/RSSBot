@@ -73,6 +73,14 @@ sub getbots
 	return $bots;
 }
 
+sub checkuser
+{
+	my $self = shift;
+	my $who  = shift;
+	
+	return 1; #always admin for now, will make real system later
+}
+
 sub getbotbybid
 {
 	my $self = shift;
