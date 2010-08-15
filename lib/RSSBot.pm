@@ -228,7 +228,7 @@ EOL
 		}
 		elsif ($what =~ /addchantobot\s+(\S+)\s+(\d+)/)
 		{
-			$heap->{dbo}->addchantobot($1, $2);
+			$heap->{dbo}->addchanneltobot($1, $2);
 		}
 		elsif ($what =~ /removefeed\s+(\d+)/)
 		{
@@ -244,7 +244,7 @@ EOL
 		}
 		elsif ($what =~ /removechanfrombot\s+(\S+)\s+(\d+)/)
 		{
-			$heap->{dbo}->removechanfrombot($1, $2);
+			$heap->{dbo}->removechannelfrombot($1, $2);
 		}
 	}
 }
