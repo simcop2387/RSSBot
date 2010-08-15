@@ -30,7 +30,7 @@ sub new
     $self->{sth}{addfeed}         = $self->{dbh}->prepare("INSERT INTO rssfeeds (feedurl) VALUES (?)");
     $self->{sth}{addentry}        = $self->{dbh}->prepare("INSERT INTO rssentry (rid, entryid) VALUES (?, ?)");
     $self->{sth}{addfeedtobot}    = $self->{dbh}->prepare("INSERT INTO rssbots (rid, bid) VALUES (?, ?)");
-    $self->{sth}{addchanneltobot} = $self->{dbh}->prepare("INSERT INTO botchannels (bid, channel) VALUES (?, ?)");
+    $self->{sth}{addchanneltobot} = $self->{dbh}->prepare("INSERT INTO botchannels (channel, bid) VALUES (?, ?)");
     
     $self->{sth}{removefeed}      = $self->{dbh}->prepare("DELETE FROM rssfeeds WHERE rid||'' = ?; DELETE FROM rssbots WHERE rid||'' = ?; DELETE FROM rssentry    WHERE rid||'' = ?");
     $self->{sth}{removebot}       = $self->{dbh}->prepare("DELETE FROM bots     WHERE bid||'' = ?; DELETE FROM rssbots WHERE bid||'' = ?; DELETE FROM botchannels WHERE bid||'' = ?");
@@ -193,8 +193,8 @@ sub removebot
 sub removechannelfrombot
 {
 	my $self = shift;
-	my $bid = shift;
 	my $channel = shift;
+	my $bid = shift;
 	my $sth = $self->{sth}{removechanfrombot};
 	
 	$sth->execute($bid, $channel);
