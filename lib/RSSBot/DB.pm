@@ -207,7 +207,7 @@ sub removefeed
 	my $rid = shift;
 	my $sth = $self->{sth}{removefeed};
 	
-	$sth->execute($rid,$rid,$rid);
+	$sth->execute($rid);
 	return $sth->rows();
 }
 
